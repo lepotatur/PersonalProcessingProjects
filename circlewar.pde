@@ -1,4 +1,4 @@
-
+float speedmult = 0.5;
 ArrayList<unit> units = new ArrayList<unit>();
 PVector campos = new PVector(width/2, height/2);
 int reinfs = 0;
@@ -16,6 +16,9 @@ boolean akey = false;
 boolean dkey = false;
 unit Player;
 void draw() {
+  translate(0,0);
+  fill(255);
+  rect(0,0,50,50);
   if (Player != null) {
     if (wkey) {
       Player.pos.y-=Player.speed;
@@ -90,7 +93,11 @@ void draw() {
     
   }
   if (reinfs < 1) {
-    Player = new unit(-width*2, height/2, color(255, 0, 0), true, true);
+    Player = new unit(width/2, height/2, color(0, 255, 0), true, true);
+    units.add(new unit(25+width/2, 25+height/2, color(0, 255, 0), true, true));
+    units.add(new unit(-25+width/2, -25+height/2, color(0, 255, 0), true, true));
+    units.add(new unit(25+width/2, -25+height/2, color(0, 255, 0), true, true));
+    units.add(new unit(-25+width/2, 25+height/2, color(0, 255, 0), true, true));
     units.add(Player);
     reinfs++;
   }
@@ -122,7 +129,6 @@ void draw() {
 //    println(Player.pos.y);
 //  }
 //}
-
 /*
 p5.collide2D was created by http://benmoren.com
 Some functions and code modified version from http://www.jeffreythompson.org/collision-detection
@@ -533,7 +539,20 @@ Boolean collidePointArc(float px, float py, float ax, float ay, float arcRadius,
     }
   }
   return false;
-}void keyPressed() {
+}//void mousePressed() {
+ 
+//  if (mouseButton == LEFT){
+//    if (Player != null) {
+//      speedmult *= 2;
+//    }
+//  }else if (mouseButton == RIGHT) {
+//    if (Player != null) {
+//      speedmult *= 0.5;
+//    }
+//  }
+//}
+
+void keyPressed() {
   if (key == 'w') {
     wkey = true;
   }
@@ -568,9 +587,9 @@ class unit {
   float health = 100;
   float maxhealth = 100;
   boolean sup = false;
-  float speed = 3+random(2);
+  float speed = (3+random(2))*speedmult;
   boolean plyr = false;
-  float accuracy = 0.34;
+  float accuracy = 0.34*speedmult;
   unit Target;
   unit me;
   unit(float x, float y, color team, boolean superSoldier, boolean isPly) {
@@ -580,18 +599,18 @@ class unit {
     Team = team;
     sup = superSoldier;
     if(superSoldier) {
-      accuracy = 0.67;
-      health = 800;
+      accuracy = 0.67*speedmult;
+      health = 400;
       maxhealth = health;
-      dmg = 80;
-      speed = 7;
+      dmg = 40;
+      speed = 7*speedmult;
     }
     if (isPly) {
-      health = 1600;
-      accuracy = 1;
+      health = 800;
+      accuracy = 1*speedmult;
       maxhealth = health;
-      dmg = 188;
-      speed = 9;
+      dmg = 99;
+      speed = 9*speedmult;
       
     }
     me = this;
@@ -600,16 +619,37 @@ class unit {
   void update() {
     if(health<=0) {units.remove(this);if(Player==me){reinfs--;}if(Team == color(255,0,0)){red--;}else if(Team == color(0,0,255)){blue--;}return;} // if the player is dead, respawn
     if(sup){
-      textSize(8);
-      fill(255);
-      textAlign(CENTER);
-      text("Health: "+round(health)+"/"+round(maxhealth),pos.x,pos.y-5);
-      
+      if (Team == Player.Team) {
+        textSize(8);
+        fill(255);
+        textAlign(CENTER);
+        text("Health: "+round(health)+"/"+round(maxhealth),pos.x,pos.y-5);
+      }
       if (health < maxhealth) {
         health+=0.5;
       }
     }
-    if(plyr) {
+    //
+    
+    
+    if (health < maxhealth && sup == false) {
+      accuracy = -abs(accuracy);
+      
+    }else if(!sup && health >= maxhealth){accuracy = abs(accuracy);}
+    if (health <= maxhealth/2 && sup) {
+      accuracy = -abs(accuracy);
+      
+    }else if(sup && health > maxhealth/2){accuracy = abs(accuracy);}
+    
+    
+    
+    if (!sup && !plyr) {
+      if (health < maxhealth) {
+        health+=0.25;
+      }
+    }
+    //
+    if(Player == me) {
       textSize(8);
       fill(0,0,255);
       textAlign(CENTER);
@@ -617,6 +657,9 @@ class unit {
       fill(255,0,0);
       textAlign(CENTER);
       text(red,pos.x-50,pos.y-10);
+      //fill(255);
+      //textAlign(CENTER);
+      //text(speedmult,pos.x+5,pos.y-20);
       
     }
     if (me != Player) {// am I not a player?
